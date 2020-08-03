@@ -49,7 +49,7 @@ function Get-WSMMSIPropertyTable{
                    ValueFromPipelineByPropertyName=$true,
                    Position=0)]
         [validatescript({
-            if (Get-ChildItem $_ | Where-Object Extension -eq '.MSI'){$true}
+            if (Get-Item $_ | Where-Object Extension -eq '.MSI'){$true}
             else {Write-Error -Message "Invalid MSI Path / File Supplied: $_." -ErrorAction Stop}
         })]
         [string]$Path
