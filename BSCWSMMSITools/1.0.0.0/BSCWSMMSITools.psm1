@@ -103,9 +103,15 @@ function Get-WSMMSIPropertyTable{
 
         # Iterate the return data and send output
         while ($Record = $View.GetType().InvokeMember('Fetch', $InvokeMethod, $null, $View, $null)) {
-            $private:Name  = $Record.GetType().InvokeMember('StringData', $GetProoperty, $null, $Record, 1) 
+            $private:Property  = $Record.GetType().InvokeMember('StringData', $GetProoperty, $null, $Record, 1) 
             $private:Value = $Record.GetType().InvokeMember('StringData', $GetProoperty, $null, $Record, 2)
-            @{$Name = $Value}
+
+            # Public properties are always upper-case
+            [PSCustomObject]@{
+                Property = $Property
+                Value = $Value
+                Public = if ($Property -ceq $Property.ToUpper()){$true}else{$false}
+            }
         }
     }
     End {
