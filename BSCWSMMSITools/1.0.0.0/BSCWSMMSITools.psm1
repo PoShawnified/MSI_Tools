@@ -23,21 +23,21 @@ function Get-WSMMSIPropertyTable{
     .EXAMPLE
         Get-MSIPropertyTable -Path 'C:\Application_1.0.msi'
 
-        Name                           Value
-        ----                           -----
-        UpgradeCode                    {198663C2-2045-4B4E-B1D6-05414B4664CA}
-        ALLUSERS                       1
-        DISABLEADVTSHORTCUTS           1
-        ARPPRODUCTICON                 Product.ico
-        ARPCOMMENTS                    Application 1.0
-        ARPCONTACT                     Vendor
-        Manufacturer                   Vendor Corp.
-        ProductCode                    {D5EDC5B4-1167-4368-970A-304328B4C80C}
-        ProductLanguage                1033
-        ProductName                    Application
-        ProductVersion                 1.0.0.0
-        SecureCustomProperties         UPGRADE;DOWNGRADE;CUSTOMPATH
-        MsiHiddenProperties            RollBack;RollForward
+        Property                       Value                                       Public
+        --------                       -----                                       ------
+        UpgradeCode                    {198663C2-2045-4B4E-B1D6-05414B4664CA}      False
+        ALLUSERS                       1                                           True
+        DISABLEADVTSHORTCUTS           1                                           True
+        ARPPRODUCTICON                 Product.ico                                 True
+        ARPCOMMENTS                    Application 1.0                             True
+        ARPCONTACT                     Vendor                                      True
+        Manufacturer                   Vendor Corp.                                False
+        ProductCode                    {D5EDC5B4-1167-4368-970A-304328B4C80C}      False
+        ProductLanguage                1033                                        False
+        ProductName                    Application                                 False
+        ProductVersion                 1.0.0.0                                     False
+        SecureCustomProperties         UPGRADE;DOWNGRADE;CUSTOMPATH                False
+        MsiHiddenProperties            RollBack;RollForward                        False
     #>
 
     [CmdletBinding()]
