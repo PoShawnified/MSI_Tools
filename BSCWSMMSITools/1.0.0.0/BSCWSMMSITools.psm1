@@ -21,7 +21,7 @@ function Get-WSMMSIPropertyTable{
     .Synopsis
        Return the content of an MSI's "Property" table
     .EXAMPLE
-        Get-MSIPropertyTable -Path 'C:\Application_1.0.msi'
+        Get-MSIPropertyTable -Path 'C:\Application_1.0.msi' -Transforms ('C:\AppMst1.mst','C:\AppMst2.mst')
 
         Property                       Value                                       Public
         --------                       -----                                       ------
@@ -52,12 +52,25 @@ function Get-WSMMSIPropertyTable{
             if (Get-Item $_ | Where-Object Extension -eq '.MSI'){$true}
             else {Write-Error -Message "Invalid MSI Path / File Supplied: $_." -ErrorAction Stop}
         })]
-        [string]$Path
+        [string]$Path,
+
+        # Full path to the MST file
+        [Parameter(Mandatory=$false,
+                   ValueFromPipelineByPropertyName=$true,
+                   Position=0)]
+        [validatescript({
+            $_ | Foreach-Object { 
+              $thisMst = $_
+              if (Get-Item $thisMst | Where-Object Extension -eq '.MST'){$true}
+              else {Write-Error -Message "Invalid Transform Path / File Supplied: $thisMst." -ErrorAction Stop}
+            }
+        })]
+        [string[]]$Transforms
     )
 
     Begin {
         # Unlike Get-Item/ChildItem, InvokeMember won't accept a relative path, so we'll convert if necessary
-        $Path = Convert-Path -Path $Path
+        $Path = (Convert-Path -Path $Path).ToString()
 
         # Attempt to connect to the Windows Installer COM Object
         try {
@@ -70,7 +83,7 @@ function Get-WSMMSIPropertyTable{
         # Define the DB query and binding flags
         $MSIDBQuery = 'SELECT * FROM Property'
         $InvokeMethod = [System.Reflection.BindingFlags]::InvokeMethod
-        $GetProoperty = [System.Reflection.BindingFlags]::GetProperty
+        $GetProperty = [System.Reflection.BindingFlags]::GetProperty
     }
 
     Process {
@@ -78,11 +91,27 @@ function Get-WSMMSIPropertyTable{
         $MSIDatabase = $COMWindowsInstaller.GetType().InvokeMember(
             'OpenDatabase', 
             $InvokeMethod, 
-            $Null, 
+            $null, 
             $COMWindowsInstaller, 
             @($Path, 0)
         )
+ 
+        # Apply MSTs
+        if ($Transforms){
+            $Transforms | ForEach-Object {
+                # Unlike Get-Item/ChildItem, InvokeMember won't accept a relative path, so we'll convert if necessary
+                $thisMST = (Convert-Path -Path $_).ToString()
 
+                $MSIDatabase.GetType().InvokeMember(
+                    'ApplyTransform',
+                    $InvokeMethod,
+                    $null,
+                    $MSIDatabase,
+                    @($thisMST, 0)
+                )
+            }
+        }
+        
         # Load the query
         $View = $MSIDatabase.GetType().InvokeMember(
             'OpenView', 
@@ -103,8 +132,8 @@ function Get-WSMMSIPropertyTable{
 
         # Iterate the return data and send output
         while ($Record = $View.GetType().InvokeMember('Fetch', $InvokeMethod, $null, $View, $null)) {
-            $private:Property  = $Record.GetType().InvokeMember('StringData', $GetProoperty, $null, $Record, 1) 
-            $private:Value = $Record.GetType().InvokeMember('StringData', $GetProoperty, $null, $Record, 2)
+            $private:Property  = $Record.GetType().InvokeMember('StringData', $GetProperty, $null, $Record, 1) 
+            $private:Value = $Record.GetType().InvokeMember('StringData', $GetProperty, $null, $Record, 2)
 
             # Public properties are always upper-case
             [PSCustomObject]@{
