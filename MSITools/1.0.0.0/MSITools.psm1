@@ -16,7 +16,7 @@
 #=================================================================
 #region - Define PUBLIC Advanced Functions
 #=================================================================
-function Get-WSMMSIPropertyTable{
+function Get-MSIPropertyTable{
     <#
     .Synopsis
        Return the content of an MSI's "Property" table
@@ -162,7 +162,7 @@ function Get-WSMMSIPropertyTable{
 #=================================================================
 #region - Export Modules
 #=================================================================
-Export-ModuleMember -Function *-WSM*
+Export-ModuleMember -Function *-*
 #=================================================================
 #endregion - Export Modules
 #=================================================================
